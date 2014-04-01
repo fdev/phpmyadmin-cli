@@ -44,7 +44,7 @@ pip install git+http://github.com/fdev/phpmyadmin-cli
 ```
 
 
-**Important:** Because of incorrect file permissions in the prettytable package,
+**IMPORTANT:** Because of incorrect file permissions in the prettytable package,
 the following error can occur when running phpmyadmin-cli:
 
 ```
@@ -155,4 +155,8 @@ Compatibility
 -------------
 While phpmyadmin-cli should work with phpMyAdmin 3.x and 4.x, it has only been 
 tested with on 3.3.10deb1, 3.4.4, 3.5.8.1deb1 and 4.1.11.
+
+
+*This application is not affiliated with or endorsed by the phpMyAdmin Project 
+or its trademark owners.*
 
