@@ -1,0 +1,23 @@
+On most UNIX-like systems, you can install phpmyadmin-cli by running one of the 
+following install commands as root or by using sudo.
+
+  git clone git://github.com/fdev/phpmyadmin-cli.git
+  cd phpmyadmin-cli
+  python setup.py install
+
+or
+
+  pip install git+http://github.com/fdev/phpmyadmin-cli
+
+
+Important: Because of incorrect file permissions in the prettytable package,
+the following error can occur when running phpmyadmin-cli:
+
+  IOError: [Errno 13] Permission denied: '.../prettytable-0.7.2.egg-info/top_level.txt'
+
+Until an updated version is available, the following workaround is provided:
+
+  sudo find /usr/local/lib/python2.7/dist-packages/prettytable-0.7.2-py2.7.egg/EGG-INFO/ -type f -exec chmod a+r '{}' \;
+ 
+See https://code.google.com/p/prettytable/issues/detail?id=36 for more details.
+
