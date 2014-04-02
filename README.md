@@ -161,10 +161,13 @@ tested with on 3.3.10deb1, 3.4.4, 3.5.8.1deb1 and 4.1.11.
 Frequently Asked Questions
 --------------------------
 **Q:** Does phpmyadmin-cli work over https?
+
 **A:** Yes it does. You can ignore bad certificates using the 
 `--ssl-ignore` option.
 
+
 **Q:** Was this an April Fools joke?
+
 **A:** Yes, you should obviously use the mysql command when available. 
 However, the application does fully work as described and, unfortunately, actual 
 use cases for this application do exist.
