@@ -33,6 +33,7 @@ Usage: phpmyadmin-cli [OPTIONS] database
   -p                  Prompt for password to use.
   --password=name     Password to use.
   -s, --ssl-ignore    Ignore bad SSL certificates.
+  -t, --timeout=n     Http request timeout in seconds.
   -u, --user=name     User for login if not current user.
   -V, --version       Output version information and exit.
 """
@@ -44,6 +45,7 @@ Usage: phpmyadmin-cli [OPTIONS] database
 		parser.add_option('-p', action='store_true', dest='askpass', default=False)
 		parser.add_option('--password', action='store', dest='password', default='')
 		parser.add_option('-s', '--ssl-ignore', action='store_false', dest='verify', default=True)
+		parser.add_option('-t', '--timeout', action='store', type='int', dest='timeout', default=None)
 		parser.add_option('-u', '--user', action='store', dest='user', default=False)
 		parser.add_option('-V', '--version', action='store_true', dest='version', default=False)
 
@@ -65,23 +67,24 @@ Usage: phpmyadmin-cli [OPTIONS] database
 		askpass = kwargs.get('askpass')
 		password = kwargs.get('password')
 		verify = kwargs.get('verify')
+		timeout = kwargs.get('timeout')
 
 		if user is False:
 			user = os.environ.get('USER', 'root')
 
 		if askpass:
 			password = getpass('Enter password: ')
-	
+
 		# Open phpMyAdmin
 		session = requests.Session()
-		result = session.get(phpmyadmin, verify=verify)
+		result = session.get(phpmyadmin, verify=verify, timeout=timeout)
 		if result.status_code not in (200, 401):
 			sys.exit('Could not connect to phpMyAdmin.')
 
 		# Auth type is http
 		if result.status_code == 401:
 			session.auth = (user, password)
-			result = session.get(phpmyadmin, verify=verify)
+			result = session.get(phpmyadmin, verify=verify, timeout=timeout)
 
 			if result.status_code == 401:
 				sys.exit("ERROR #0401: Access denied for user '%s'@'%s' (using password: %s)" % (user, phpmyadmin, 'YES' if password else 'NO'))
@@ -103,7 +106,7 @@ Usage: phpmyadmin-cli [OPTIONS] database
 					'server' : 1,
 					'token' : token,
 				}
-				result = session.post(phpmyadmin, data=data, verify=verify)
+				result = session.post(phpmyadmin, data=data, verify=verify, timeout=timeout)
 
 				# Still at the login screen
 				match = re.search(r'name="login_form"', result.text)
@@ -129,7 +132,7 @@ Usage: phpmyadmin-cli [OPTIONS] database
 				'sql_query' : q,
 			}
 
-			result = session.post(phpmyadmin + 'import.php', data=data, verify=verify)
+			result = session.post(phpmyadmin + 'import.php', data=data, verify=verify, timeout=timeout)
 			match = re.search(r'<div class="(notice|error)">(#\d+.*?)</div>', result.text, re.DOTALL)
 			if match:
 				raise QueryException(match.group(2))
@@ -161,12 +164,12 @@ Usage: phpmyadmin-cli [OPTIONS] database
 				'output_format' : 'sendit',
 			}
 
-			result = session.post(phpmyadmin + 'export.php', data=data, verify=verify)
+			result = session.post(phpmyadmin + 'export.php', data=data, verify=verify, timeout=timeout)
 			result.encoding = 'utf-8'
-			if result and result.headers['content-type'] == 'text/comma-separated-values':
+			if result and result.headers['content-type'] == 'text/comma-separated-values' and not result.text.strip().startswith('<!-- PMA-SQL-ERROR -->'):
 				text = result.text.strip()
 				return text.encode('utf8') if python2 else text
-		
+
 			if re.search(r'name="login_form"', result.text):
 				sys.exit('ERROR #0104: Session with phpMyAdmin expired.')
 

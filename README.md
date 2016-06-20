@@ -71,6 +71,7 @@ Usage: phpmyadmin-cli [OPTIONS] database
   -p                  Prompt for password to use.
   --password=name     Password to use.
   -s, --ssl-ignore    Ignore bad SSL certificates.
+  -t, --timeout=n     Http request timeout in seconds.
   -u, --user=name     User for login if not current user.
   -V, --version       Output version information and exit.
 ```
