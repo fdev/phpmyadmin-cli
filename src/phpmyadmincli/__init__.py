@@ -166,9 +166,11 @@ Usage: phpmyadmin-cli [OPTIONS] database
 
 			result = session.post(phpmyadmin + 'export.php', data=data, verify=verify, timeout=timeout)
 			result.encoding = 'utf-8'
-			if result and result.headers['content-type'] == 'text/comma-separated-values' and not result.text.strip().startswith('<!-- PMA-SQL-ERROR -->'):
-				text = result.text.strip()
-				return text.encode('utf8') if python2 else text
+			if result and 'text/comma-separated-values' in result.headers['content-type']:
+				# Detect invalid query
+				if not result.text.strip().startswith('<!-- PMA-SQL-ERROR -->') and not result.text.startswith('<div class="error">'):
+					text = result.text.strip()
+					return text.encode('utf8') if python2 else text
 
 			if re.search(r'name="login_form"', result.text):
 				sys.exit('ERROR #0104: Session with phpMyAdmin expired.')
