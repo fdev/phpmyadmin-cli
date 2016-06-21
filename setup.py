@@ -19,7 +19,7 @@ setup(
 	author_email = 'phpmyadmin-cli@fdev.nl',
 	packages = find_packages('src'),
 	package_dir = {'': 'src'},
-	install_requires = ['requests', 'prettytable'],
+	install_requires = ['requests', 'PTable'],
 	entry_points="""
 	[console_scripts]
 	phpmyadmin-cli = phpmyadmincli:main

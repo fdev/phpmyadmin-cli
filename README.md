@@ -21,7 +21,7 @@ Requirements
 
 * Python 2.6+
 * [Requests](http://www.python-requests.org/)
-* [PrettyTable](https://code.google.com/p/prettytable/)
+* [PTable](https://github.com/kxxoling/PTable)
 * [phpMyAdmin](http://www.phpmyadmin.net/) 3.x or 4.x
 
 
@@ -42,22 +42,6 @@ python setup.py install
 ``` sh
 pip install git+http://github.com/fdev/phpmyadmin-cli
 ```
-
-
-**IMPORTANT:** Because of incorrect file permissions in the prettytable package,
-the following error can occur when running phpmyadmin-cli:
-
-```
-IOError: [Errno 13] Permission denied: '.../prettytable-0.7.2.egg-info/top_level.txt'
-```
-
-Until an updated version is available, the following workaround is provided:
-
-``` sh
-sudo find /usr/local/lib/python2.7/dist-packages/prettytable-0.7.2-py2.7.egg/EGG-INFO/ -type f -exec chmod a+r '{}' \;
-```
-
-See https://code.google.com/p/prettytable/issues/detail?id=36 for more details.
 
 
 Usage
