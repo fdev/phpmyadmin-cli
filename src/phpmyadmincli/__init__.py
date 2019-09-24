@@ -28,6 +28,8 @@ by the phpMyAdmin Project or its trademark owners.
 
 Usage: phpmyadmin-cli [OPTIONS] database
   -e, --execute=name  Execute command and quit.
+  -E, --export=table  Export specified tables, can be used multiple times.
+  -A, --export-all    Export all tables.
   -h, --help          Display this help and exit.
   -l, --location=url  Location of phpMyAdmin (http://localhost/phpmyadmin/).
   -p                  Prompt for password to use.
@@ -41,6 +43,8 @@ Usage: phpmyadmin-cli [OPTIONS] database
 		parser = OptionParser(usage='%prog [OPTIONS] database')
 		parser.format_help = usage
 		parser.add_option('-e', '--execute', action='store', dest='execute', default='')
+		parser.add_option('-E', '--export', action='append', dest='export', default=[])
+		parser.add_option('-A', '--export-all', action='store_true', dest='export_all', default=False)
 		parser.add_option('-l', '--location', action='store', dest='location', default='http://localhost/phpmyadmin/')
 		parser.add_option('-p', action='store_true', dest='askpass', default=False)
 		parser.add_option('--password', action='store', dest='password', default='')
@@ -64,6 +68,8 @@ Usage: phpmyadmin-cli [OPTIONS] database
 		phpmyadmin = kwargs.get('location').rstrip('/') + '/'
 		user = kwargs.get('user')
 		execute = kwargs.get('execute')
+		export = kwargs.get('export')
+		export_all = kwargs.get('export_all')
 		askpass = kwargs.get('askpass')
 		password = kwargs.get('password')
 		verify = kwargs.get('verify')
@@ -137,6 +143,49 @@ Usage: phpmyadmin-cli [OPTIONS] database
 			if match:
 				raise QueryException(match.group(2))
 
+		def query_export(tables):
+			"""Perform one or more queries, separated by semi-colon."""
+			data = {
+				'db' : database,
+				'token' : token,
+				'export_type' : 'database',
+				'export_method' : 'quick',
+				'quick_or_custom' : 'quick',
+				'table_select[]' : tables,
+				'table_structure[]' : tables,
+				'table_data[]' : tables,
+				'output_format' : 'sendit',
+				'filename_template' : '@DATABASE@',
+				'remember_template' : 'on',
+				'charset_of_file' : 'utf-8',
+				'compression' : 'none',
+				'maxsize' : '',
+				'what' : 'sql',
+				'sql_include_comments' : 'something',
+				'sql_header_comment' : '',
+				'sql_compatibility' : 'NONE',
+				'sql_structure_or_data' : 'structure_and_data',
+				'sql_create_table' : 'something',
+				'sql_create_view' : 'something',
+				'sql_procedure_function' : 'something',
+				'sql_create_trigger' : 'something',
+				'sql_create_table_statements' : 'something',
+				'sql_if_not_exists' : 'something',
+				'sql_auto_increment' : 'something',
+				'sql_backquotes' : 'something',
+				'sql_type' : 'INSERT',
+				'sql_insert_syntax' : 'both',
+				'sql_max_query_size' : '50000',
+				'sql_hex_for_binary' : 'something',
+				'sql_utc_time' : 'something'
+			}
+
+			result = session.post(phpmyadmin + 'export.php', data=data, verify=verify, timeout=timeout)
+			result.encoding = 'utf-8'
+			if not result:
+				raise QueryException("Unable to export database.")
+			return result.text.encode('utf8') if python2 else result.text
+
 		def query(q):
 			"""Perform a single query and return the returned rows."""
 			data = {
@@ -177,6 +226,20 @@ Usage: phpmyadmin-cli [OPTIONS] database
 
 			match = re.search(r'<code>\s*(.*?)\s*</code>', result.text, re.DOTALL)
 			raise QueryException(match.group(1) if match else 'Could not execute query.')
+
+		# Perform export
+		if export or export_all:
+			try:
+				if export_all:
+					# Get list of tables to export
+					output = query('SHOW TABLES')
+					reader = csv.reader(output.split('\n'))
+					export = [row[0] for row in reader][1:]
+
+				print(query_export(export))
+			except QueryException as e:
+				sys.exit('ERROR %s' % e)
+			sys.exit()
 
 		# Handle stdin
 		if not sys.stdin.isatty():
@@ -240,4 +303,3 @@ by the phpMyAdmin Project or its trademark owners.
 
 if __name__ == '__main__':
 	main()
-

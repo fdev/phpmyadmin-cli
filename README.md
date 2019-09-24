@@ -50,6 +50,8 @@ Usage
 ```
 Usage: phpmyadmin-cli [OPTIONS] database
   -e, --execute=name  Execute command and quit.
+  -E, --export=table  Export specified tables, can be used multiple times.
+  -A, --export-all    Export all tables.
   -h, --help          Display this help and exit.
   -l, --location=url  Location of phpMyAdmin (http://localhost/phpmyadmin/).
   -p                  Prompt for password to use.
@@ -67,6 +69,18 @@ Examples
 **Import a sql file**
 ```
 $ phpmyadmin-cli testdatabase < database.sql
+```
+
+**Export an entire database**
+
+```
+$ phpmyadmin-cli --export-all testdatabase > database.sql
+```
+
+**Export specific tables**
+
+```
+$ phpmyadmin-cli --export article testdatabase > articles.sql
 ```
 
 **Execute a single query**
